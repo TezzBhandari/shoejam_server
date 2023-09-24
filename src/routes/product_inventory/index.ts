@@ -1,11 +1,10 @@
-import {Router} from "express"
-import CustomError from "../../errors/CustomError"
-import { ErrorCode, ErrorType } from "../../errors/types"
+import { Router } from "express";
+import CustomError from "../../errors/CustomError";
+import { ErrorCode, ErrorType } from "../../errors/types";
+import productCategoryRoutes from "./product_category";
 
-const router = Router()
+const router = Router();
 
-router.use("/product-category", ()=> {
-    throw new CustomError({errorCode: ErrorCode.BAD_REQUEST, errorType: ErrorType.BAD_REQUEST, message: "BAD_REQUEST", property: 'hello'})
-})
+router.use("/product-category", productCategoryRoutes);
 
-export default router
+export default router;
