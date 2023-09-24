@@ -27,6 +27,11 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@prisma/engines@5.3.1":
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/@prisma/engines/-/engines-5.3.1.tgz#53cc72a5ed176dc27d22305fe5569c64cc78b381"
+  integrity sha512-6QkILNyfeeN67BNEPEtkgh3Xo2tm6D7V+UhrkBbRHqKw9CTaz/vvTP/ROwYSP/3JT2MtIutZm/EnhxUiuOPVDA==
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.9.tgz#df4907fc07a886922637b15e02d4cebc4c0021b2"
@@ -650,6 +655,13 @@ picomatch@^2.0.4, picomatch@^2.2.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-2.3.1.tgz#3ba3833733646d9d3e4995946c1365a67fb07a42"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
+
+prisma@^5.3.1:
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/prisma/-/prisma-5.3.1.tgz#a0932c1c1a5ed4ff449d064b193d9c7e94e8bf77"
+  integrity sha512-Wp2msQIlMPHe+5k5Od6xnsI/WNG7UJGgFUJgqv/ygc7kOECZapcSz/iU4NIEzISs3H1W9sFLjAPbg/gOqqtB7A==
+  dependencies:
+    "@prisma/engines" "5.3.1"
 
 proxy-addr@~2.0.7:
   version "2.0.7"
