@@ -17,11 +17,16 @@ export enum ErrorType {
 
 // error codes
 export enum ErrorCode {
-  // VALIDATION_ERROR = 400,
   CONFLICT = 409,
   BAD_REQUEST = 400,
   UNAUTHORIZED = 401,
   FORBIDDEN = 403,
   NOT_FOUND = 404,
   INTERNAL_SERVER_ERROR = 500,
+}
+
+export enum ErrorMessage {
+  MISSING_FIELD = "missing required field",
+  NOT_FOUND = "not found",
+  ALREADY_EXIST = "resource already exist",
 }

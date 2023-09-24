@@ -2,12 +2,14 @@ import { NextFunction, Request, Response } from "express";
 
 import prisma from "../../../db/prisma";
 import CustomError from "../../../errors/CustomError";
-import { ErrorCode, ErrorType } from "../../../errors/types";
+import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
 
+// Type Definition for adding root category route request body
 export interface RootCategoryRequestBody {
   category_name: string;
 }
 
+// Type Definition for adding sub category route request body
 export interface SubCategoryRequestBody {
   sub_category_name: string;
   parent_category_id: string;
@@ -25,6 +27,7 @@ const AddRootCategory = async (
   next: NextFunction
 ) => {
   try {
+    // extracting category name from request body
     const { category_name }: RootCategoryRequestBody = req.body;
 
     // check for empty field
@@ -33,7 +36,7 @@ const AddRootCategory = async (
       throw new CustomError({
         errorCode: ErrorCode.BAD_REQUEST,
         errorType: ErrorType.VALIDATION_ERROR,
-        message: "missing required field",
+        message: ErrorMessage.MISSING_FIELD,
         property: "category name",
       });
     }
@@ -49,7 +52,7 @@ const AddRootCategory = async (
       throw new CustomError({
         errorCode: ErrorCode.CONFLICT,
         errorType: ErrorType.CONFLICT,
-        message: "resource already exists",
+        message: ErrorMessage.ALREADY_EXIST,
         property: "category name",
       });
     }
@@ -77,7 +80,7 @@ const AddRootCategory = async (
         new_root_category: {
           category_name: new_category.category_name,
           category_slug: new_category.category_slug,
-          create_at: new_category.created_at,
+          created_at: new_category.created_at,
         },
       },
       errors: null,
@@ -101,15 +104,18 @@ const AddSubCategory = async (
   next: NextFunction
 ) => {
   try {
+    //extracting category id from request params
     const { category_id } = req.params;
+
+    // extracting category name from request body
     const { sub_category_name }: SubCategoryRequestBody = req.body;
 
     if (!category_id) {
       throw new CustomError({
         errorCode: ErrorCode.BAD_REQUEST,
         errorType: ErrorType.BAD_REQUEST,
-        message: "required field missing",
-        property: "parent_category",
+        message: "parent category_id params missing",
+        property: "category_id",
       });
     }
 
@@ -117,7 +123,7 @@ const AddSubCategory = async (
       throw new CustomError({
         errorCode: ErrorCode.BAD_REQUEST,
         errorType: ErrorType.VALIDATION_ERROR,
-        message: "missing required field",
+        message: ErrorMessage.MISSING_FIELD,
         property: "category name",
       });
     }
@@ -133,11 +139,12 @@ const AddSubCategory = async (
       throw new CustomError({
         errorCode: ErrorCode.NOT_FOUND,
         errorType: ErrorType.NOT_FOUND,
-        message: "not found",
+        message: ErrorMessage.NOT_FOUND,
         property: "parent_category",
       });
     }
 
+    // check of conflict resource sub-category
     const conflict = await prisma.category.findUnique({
       where: {
         category_name: sub_category_name,
@@ -148,11 +155,12 @@ const AddSubCategory = async (
       throw new CustomError({
         errorCode: ErrorCode.CONFLICT,
         errorType: ErrorType.CONFLICT,
-        message: "resource already exists",
+        message: ErrorMessage.ALREADY_EXIST,
         property: "category name",
       });
     }
 
+    // creating sub-cateogry slug out fo subcategory name
     const sub_category_slug = sub_category_name.replace(/\s+/g, "-");
 
     // new sub category
@@ -176,6 +184,7 @@ const AddSubCategory = async (
       },
     });
 
+    // SENDING SUCCESFULL RESPONSE
     res.status(201).json({
       status: "success",
       data: {
