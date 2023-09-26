@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../../../db/prisma";
 import CustomError from "../../../errors/CustomError";
 import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
+import { resourceUsage } from "process";
 
 // Type Definition for adding root category route request body
 export interface RootCategoryRequestBody {
@@ -58,7 +59,7 @@ const AddRootCategory = async (
     }
 
     // creating category slug out of name by replaceing spaces with hypen
-    const category_slug = category_name.replace(/\s+/g, "-");
+    const category_slug = category_name.replace(/\s+/g, "-").toLowerCase();
 
     // creating new category
     const new_category = await prisma.category.create({
@@ -92,6 +93,49 @@ const AddRootCategory = async (
 };
 
 /**
+ * handler: lists all categories
+ */
+const RetrieveAllCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const categories = await prisma.category.findMany({
+      select: {
+        id: true,
+        category_slug: true,
+        category_name: true,
+        created_at: true,
+        updated_at: true,
+        subcategory: true,
+      },
+      // where: {
+      //   parent_category_id: null,
+      // },
+    });
+    if (!categories) {
+      throw new CustomError({
+        errorCode: ErrorCode.NOT_FOUND,
+        errorType: ErrorType.NOT_FOUND,
+        message: "resource not found",
+        property: "",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        categories,
+      },
+      errors: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * adds the subcategory of a category
  * @param req express request object
  * @param res express response object
@@ -105,6 +149,7 @@ const AddSubCategory = async (
 ) => {
   try {
     //extracting category id from request params
+    console.log(req.params);
     const { category_id } = req.params;
 
     // extracting category name from request body
@@ -124,7 +169,7 @@ const AddSubCategory = async (
         errorCode: ErrorCode.BAD_REQUEST,
         errorType: ErrorType.VALIDATION_ERROR,
         message: ErrorMessage.MISSING_FIELD,
-        property: "category name",
+        property: "sub category name",
       });
     }
 
@@ -161,7 +206,9 @@ const AddSubCategory = async (
     }
 
     // creating sub-cateogry slug out fo subcategory name
-    const sub_category_slug = sub_category_name.replace(/\s+/g, "-");
+    const sub_category_slug = sub_category_name
+      .replace(/\s+/g, "-")
+      .toLowerCase();
 
     // new sub category
     const new_sub_category = await prisma.category.create({
@@ -203,4 +250,4 @@ const AddSubCategory = async (
   }
 };
 
-export { AddRootCategory, AddSubCategory };
+export { AddRootCategory, AddSubCategory, RetrieveAllCategory };
