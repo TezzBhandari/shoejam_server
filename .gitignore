@@ -1,11 +1,10 @@
 # Dependencies
 /node_modules
 
+
 # environment variables
 /.env
 
 # test files
 /test.ts
 
-# prisma ignore
-/prisma
