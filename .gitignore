@@ -3,6 +3,3 @@
 
 # environment variables
 /.env
-
-# test files
-/test.ts
