@@ -27,13 +27,15 @@ const errorHandler = (
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     // The .code property can be accessed in a type-safe manner
     if (error.code === "P2002") {
-      console.debug(
+      console.error(
         "There is a unique constraint violation, a new category cannot be created with this name"
       );
       res.status(400).json({
         status: "error",
         data: null,
-        errors: [{ message: "Database constraint Violation Error" }],
+        errors: [
+          { message: "Database Constraint Violation Error", property: "" },
+        ],
       });
     }
   }
@@ -42,7 +44,7 @@ const errorHandler = (
   res.status(500).json({
     status: "error",
     data: null,
-    errors: [{ message: "Server Error. Try Again" }],
+    errors: [{ message: "Server Error. Try Again", property: "" }],
   });
 };
 
