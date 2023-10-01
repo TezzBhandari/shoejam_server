@@ -8,7 +8,6 @@ import {
   primaryKey,
   foreignKey,
   index,
-  decimal,
   doublePrecision,
   boolean,
 } from "drizzle-orm/pg-core";
@@ -26,7 +25,7 @@ export const Category = pgTable(
     //   parent_category_id: uuid("parent_category_id").references(() => Category.id),
     parent_category_id: uuid("parent_category_id"),
     created_at: timestamp("created_at").notNull().defaultNow(),
-    updated_at: timestamp("updated_at").defaultNow().notNull(),
+    updated_at: timestamp("updated_at").notNull().defaultNow(),
   },
 
   // one to many realtion: category hierarchy tree
@@ -61,6 +60,10 @@ export const CategoryRelations = relations(Category, ({ one, many }) => ({
   //   relationName: "parent_category",
   // }),
 }));
+
+// types of insert and slect category
+export type InsertCategoryType = typeof Category.$inferInsert;
+export type SelectCategoryType = typeof Category.$inferSelect;
 
 // Product Table: stores the product detail like product_name, product_description, etc
 export const Product = pgTable(

@@ -1,22 +1,23 @@
 import { NextFunction, Request, Response } from "express";
+import { v4 as uuidv4 } from "uuid";
 
-import db from "../../../db/client";
 import CustomError from "../../../errors/CustomError";
 import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
-import { Category } from "../../../db/schema";
-import { eq } from "drizzle-orm";
+import {
+  InsertCategory,
+  SelectCategory,
+  SelectCategoryByName,
+  SelectParentCategoryById,
+} from "./db_utils";
 
-// Type Definition for adding root category route request body
-export interface RootCategoryRequestBody {
+// Type Definition for adding root category route request body and subcategory as well
+export interface CategoryRequestBody {
   category_name: string;
-  category_slug: string;
 }
 
-// Type Definition for adding sub category route request body
-export interface SubCategoryRequestBody {
-  sub_category_name: string;
-  parent_category_id: string;
-  sub_category_slug: string;
+// type definition for request params in sub_category route
+export interface SubCategoryRequestParams {
+  category_id: string;
 }
 
 /**
@@ -26,13 +27,13 @@ export interface SubCategoryRequestBody {
  */
 
 const AddRootCategory = async (
-  req: Request,
+  req: Request<{}, {}, CategoryRequestBody>,
   res: Response,
   next: NextFunction
 ) => {
   try {
     // extracting category name from request body
-    let { category_name, category_slug }: RootCategoryRequestBody = req.body;
+    const { category_name } = req.body;
 
     // check for empty field
     if (!category_name) {
@@ -46,10 +47,7 @@ const AddRootCategory = async (
     }
 
     // check of conflict resource
-    const conflict = await db
-      .select()
-      .from(Category)
-      .where(eq(Category.category_name, category_name));
+    const conflict = await SelectCategoryByName({ category_name });
 
     if (conflict) {
       throw new CustomError({
@@ -62,16 +60,16 @@ const AddRootCategory = async (
 
     // creating category slug out of name by replaceing spaces with hypen
 
-    if (!category_slug) {
-      category_slug = category_name.replace(/\s+/g, "-").toLowerCase();
-    }
-    // creating new category
-    const category_insert_res = await db
-      .insert(Category)
-      .values({ category_name, category_slug })
-      .returning();
+    const category_slug =
+      category_name.replace(/\s+/g, "-").toLowerCase() + "-" + uuidv4();
 
-    const new_category = category_insert_res[0];
+    // creating new category
+    const category_insert_response = await InsertCategory({
+      category_name,
+      category_slug,
+    });
+
+    const new_category = category_insert_response[0];
     // SENDING SUCCESFULL RESPONSE
     res.status(201).json({
       status: "success",
@@ -99,7 +97,8 @@ const RetrieveAllCategory = async (
   next: NextFunction
 ) => {
   try {
-    const categories = await db.select().from(Category);
+    const categories = await SelectCategory();
+
     if (!categories) {
       throw new CustomError({
         errorCode: ErrorCode.NOT_FOUND,
@@ -129,17 +128,16 @@ const RetrieveAllCategory = async (
  */
 
 const AddSubCategory = async (
-  req: Request,
+  req: Request<SubCategoryRequestParams, {}, CategoryRequestBody>,
   res: Response,
   next: NextFunction
 ) => {
   try {
     //extracting category id from request params
-    console.log(req.params);
     const { category_id } = req.params;
 
     // extracting category name from request body
-    const { sub_category_name }: SubCategoryRequestBody = req.body;
+    const { category_name: sub_category_name } = req.body;
 
     if (!category_id) {
       throw new CustomError({
@@ -160,10 +158,7 @@ const AddSubCategory = async (
     }
 
     // check of parent category exists
-    const parent_category = await db
-      .select()
-      .from(Category)
-      .where(eq(Category.id, category_id));
+    const parent_category = await SelectParentCategoryById({ category_id });
 
     if (parent_category === null) {
       throw new CustomError({
@@ -175,10 +170,9 @@ const AddSubCategory = async (
     }
 
     // check of conflict resource sub-category
-    const conflict = await db
-      .select()
-      .from(Category)
-      .where(eq(Category.category_name, sub_category_name));
+    const conflict = await SelectCategoryByName({
+      category_name: sub_category_name,
+    });
 
     if (conflict) {
       throw new CustomError({
@@ -194,16 +188,13 @@ const AddSubCategory = async (
       .replace(/\s+/g, "-")
       .toLowerCase();
 
-    // new sub category
-    const new_sub_category_insert_res = await db
-      .insert(Category)
-      .values({
-        category_name: sub_category_name,
-        category_slug: sub_category_slug,
-        parent_category_id: category_id,
-      })
-      .returning();
-    const new_sub_category = new_sub_category_insert_res[0];
+    const new_sub_category_insert_response = await InsertCategory({
+      category_name: sub_category_name,
+      category_slug: sub_category_slug,
+      parent_category_id: category_id,
+    });
+
+    const new_sub_category = new_sub_category_insert_response[0];
     // SENDING SUCCESFULL RESPONSE
     res.status(201).json({
       status: "success",
