@@ -1,19 +1,23 @@
 import { NextFunction, Request, Response } from "express";
 
-import prisma from "../../../db/prisma";
+import db from "../../../db/client";
 import CustomError from "../../../errors/CustomError";
 import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
 import { resourceUsage } from "process";
+import { Category } from "../../../db/schema";
+import { eq } from "drizzle-orm";
 
 // Type Definition for adding root category route request body
 export interface RootCategoryRequestBody {
   category_name: string;
+  category_slug: string;
 }
 
 // Type Definition for adding sub category route request body
 export interface SubCategoryRequestBody {
   sub_category_name: string;
   parent_category_id: string;
+  sub_category_slug: string;
 }
 
 /**
@@ -29,7 +33,7 @@ const AddRootCategory = async (
 ) => {
   try {
     // extracting category name from request body
-    const { category_name }: RootCategoryRequestBody = req.body;
+    let { category_name, category_slug }: RootCategoryRequestBody = req.body;
 
     // check for empty field
     if (!category_name) {
@@ -43,11 +47,10 @@ const AddRootCategory = async (
     }
 
     // check of conflict resource
-    const conflict = await prisma.category.findUnique({
-      where: {
-        category_name,
-      },
-    });
+    const conflict = await db
+      .select()
+      .from(Category)
+      .where(eq(Category.category_name, category_name));
 
     if (conflict) {
       throw new CustomError({
@@ -59,21 +62,17 @@ const AddRootCategory = async (
     }
 
     // creating category slug out of name by replaceing spaces with hypen
-    const category_slug = category_name.replace(/\s+/g, "-").toLowerCase();
 
+    if (!category_slug) {
+      category_slug = category_name.replace(/\s+/g, "-").toLowerCase();
+    }
     // creating new category
-    const new_category = await prisma.category.create({
-      data: {
-        category_name,
-        category_slug,
-      },
-      select: {
-        category_name: true,
-        category_slug: true,
-        created_at: true,
-      },
-    });
+    const category_insert_res = await db
+      .insert(Category)
+      .values({ category_name, category_slug })
+      .returning();
 
+    const new_category = category_insert_res[0];
     // SENDING SUCCESFULL RESPONSE
     res.status(201).json({
       status: "success",
@@ -101,19 +100,7 @@ const RetrieveAllCategory = async (
   next: NextFunction
 ) => {
   try {
-    const categories = await prisma.category.findMany({
-      select: {
-        id: true,
-        category_slug: true,
-        category_name: true,
-        created_at: true,
-        updated_at: true,
-        subcategory: true,
-      },
-      // where: {
-      //   parent_category_id: null,
-      // },
-    });
+    const categories = await db.select().from(Category);
     if (!categories) {
       throw new CustomError({
         errorCode: ErrorCode.NOT_FOUND,
@@ -174,11 +161,10 @@ const AddSubCategory = async (
     }
 
     // check of parent category exists
-    const parent_category = await prisma.category.findUnique({
-      where: {
-        id: category_id,
-      },
-    });
+    const parent_category = await db
+      .select()
+      .from(Category)
+      .where(eq(Category.id, category_id));
 
     if (parent_category === null) {
       throw new CustomError({
@@ -190,11 +176,10 @@ const AddSubCategory = async (
     }
 
     // check of conflict resource sub-category
-    const conflict = await prisma.category.findUnique({
-      where: {
-        category_name: sub_category_name,
-      },
-    });
+    const conflict = await db
+      .select()
+      .from(Category)
+      .where(eq(Category.category_name, sub_category_name));
 
     if (conflict) {
       throw new CustomError({
@@ -211,26 +196,15 @@ const AddSubCategory = async (
       .toLowerCase();
 
     // new sub category
-    const new_sub_category = await prisma.category.create({
-      data: {
+    const new_sub_category_insert_res = await db
+      .insert(Category)
+      .values({
         category_name: sub_category_name,
         category_slug: sub_category_slug,
-        parent_category_id: category_id, // If it's a top-level category
-      },
-      select: {
-        category_name: true,
-        category_slug: true,
-        created_at: true,
-        // parent_cateogry: true,
-
-        parent_cateogry: {
-          select: {
-            category_name: true,
-          },
-        },
-      },
-    });
-
+        parent_category_id: category_id,
+      })
+      .returning();
+    const new_sub_category = new_sub_category_insert_res[0];
     // SENDING SUCCESFULL RESPONSE
     res.status(201).json({
       status: "success",
@@ -239,7 +213,7 @@ const AddSubCategory = async (
           sub_category_name: new_sub_category.category_name,
           sub_category_slug: new_sub_category.category_slug,
           created_at: new_sub_category.created_at,
-          parent_category: new_sub_category.parent_cateogry?.category_name,
+          // parent_category: new_sub_category.parent_cateogry?.category_name,
         },
       },
       errors: null,

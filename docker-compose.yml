@@ -1,0 +1,25 @@
+version: "3.8"
+
+volumes:
+  shoejam_volume:
+    driver: local
+
+services:
+  shoejam_postgres_db:
+    image: postgres:16.0
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=tezz
+      - POSTGRES_PASSWORD=Bhandari18@
+      - POSTGRES_DB=shoejam_postgres_db
+    
+    volumes:
+      - shoejam_volume:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports: 
+      - 8080:8080

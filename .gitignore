@@ -1,8 +1,9 @@
 # Dependencies
 /node_modules
 
+# prisma schema
+/src/db/schema.prisma
+/data
+
 # environment variables
 /.env
-
-# test files
-/test.ts
