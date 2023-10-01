@@ -7,7 +7,7 @@ import {
   InsertCategory,
   SelectCategory,
   SelectCategoryByName,
-  SelectParentCategoryById,
+  SelectCategoryByParentId,
 } from "./db_utils";
 
 // Type Definition for adding root category route request body and subcategory as well
@@ -158,7 +158,9 @@ const AddSubCategory = async (
     }
 
     // check of parent category exists
-    const parent_category = await SelectParentCategoryById({ category_id });
+    const parent_category = await SelectCategoryByParentId({
+      parent_category_id: category_id,
+    });
 
     if (parent_category === null) {
       throw new CustomError({

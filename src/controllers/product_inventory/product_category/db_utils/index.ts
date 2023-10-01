@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import db from "../../../../db/client";
 import {
@@ -7,6 +7,30 @@ import {
   SelectCategoryType,
 } from "../../../../db/schema";
 
+// Prepared Statements
+const SelectCategoryByNamePreparedStatement = () => {
+  return db
+    .select()
+    .from(Category)
+    .where(eq(Category.category_name, sql.placeholder("category_name")))
+    .prepare("select_category_by_name");
+};
+
+const SelectCategoryPreparedStatement = () => {
+  return db.select().from(Category).prepare("select_category");
+};
+
+const SelectCategoryByParentIdPreparedStatement = () => {
+  return db
+    .select()
+    .from(Category)
+    .where(
+      eq(Category.parent_category_id, sql.placeholder("parent_category_id"))
+    )
+    .prepare("select_category_by_parent_id");
+};
+
+// db queries
 const InsertCategory = async (
   category: InsertCategoryType
 ): Promise<Array<SelectCategoryType>> => {
@@ -14,7 +38,8 @@ const InsertCategory = async (
 };
 
 const SelectCategory = async (): Promise<Array<SelectCategoryType>> => {
-  return db.select().from(Category);
+  const prepared = SelectCategoryPreparedStatement();
+  return prepared.execute();
 };
 
 const SelectCategoryByName = async ({
@@ -22,29 +47,22 @@ const SelectCategoryByName = async ({
 }: {
   category_name: string;
 }): Promise<Array<SelectCategoryType>> => {
-  return db
-    .select()
-    .from(Category)
-    .where(eq(Category.category_name, category_name));
+  const prepared = SelectCategoryByNamePreparedStatement();
+  return prepared.execute({ category_name });
 };
 
-const SelectParentCategoryById = async ({
-  category_id,
+const SelectCategoryByParentId = async ({
+  parent_category_id,
 }: {
-  category_id: string;
+  parent_category_id: string;
 }): Promise<Array<SelectCategoryType>> => {
-  return db
-    .select()
-    .from(Category)
-    .where(eq(Category.parent_category_id, category_id));
+  const prepared = SelectCategoryByParentIdPreparedStatement();
+  return prepared.execute({ parent_category_id });
 };
 
 export {
   InsertCategory,
   SelectCategory,
   SelectCategoryByName,
-  SelectParentCategoryById,
+  SelectCategoryByParentId,
 };
-
-// const newUser: NewUser = { name: "Alef" };
-// await InsertCategory(newUser);
