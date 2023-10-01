@@ -3,10 +3,9 @@ import dotenv from "dotenv";
 // import cors from "cors";
 
 import routes from "./routes";
-import prisma from "./db/prisma";
 
 import { errorHandler } from "./middlewares/errorHandler";
-import { Prisma } from "@prisma/client";
+import db from "./db/client";
 
 dotenv.config();
 
@@ -26,17 +25,13 @@ app.use("*", errorHandler);
 // server initialization
 const start = async () => {
   try {
-    console.log("Server Initializing...");
-    await prisma.$connect();
+    // console.log("Server Initializing...");
     console.log("Database Connection Established");
+    console.log(db.$with);
     app.listen(PORT, () => console.log(`Server Listening on Port ${PORT}...`));
   } catch (error: any) {
-    if (error instanceof Prisma.PrismaClientInitializationError) {
-      console.error("Server.ts", "Failed to Connect to the Database\n", error);
-    } else {
-      console.error("Failed To Start The Server");
-      console.error(error);
-    }
+    console.error("Failed To Start The Server");
+    console.error(error);
     process.exit(1);
   }
 };
