@@ -3,7 +3,6 @@
 
 # prisma schema
 /src/db/schema.prisma
-/data
 
 # environment variables
 /.env

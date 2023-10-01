@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from "express";
 import db from "../../../db/client";
 import CustomError from "../../../errors/CustomError";
 import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
-import { resourceUsage } from "process";
 import { Category } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 
