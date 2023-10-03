@@ -39,6 +39,7 @@ const InsertCategory = async (
     .values({
       category_name: category.category_name,
       category_slug: category.category_slug,
+      parent_category_id: category.parent_category_id,
     })
     .returning();
 };

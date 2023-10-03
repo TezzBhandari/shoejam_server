@@ -10,7 +10,7 @@ import {
   SelectCategoryByParentId,
 } from "./db_utils";
 
-// Type Definition for adding root category route request body and subcategory as well
+// Type Definition for request body of root category route
 export interface CategoryRequestBody {
   category_name: string;
 }
@@ -18,6 +18,11 @@ export interface CategoryRequestBody {
 // type definition for request params in sub_category route
 export interface SubCategoryRequestParams {
   category_id: string;
+}
+
+// type definition for request body of subcateogory route
+export interface SubCategoryRequestBody {
+  sub_category_name: string;
 }
 
 /**
@@ -49,7 +54,7 @@ const AddRootCategory = async (
     // check of conflict resource
     const conflict = await SelectCategoryByName({ category_name });
 
-    if (conflict) {
+    if (conflict.length !== 0) {
       throw new CustomError({
         errorCode: ErrorCode.CONFLICT,
         errorType: ErrorType.CONFLICT,
@@ -128,7 +133,7 @@ const RetrieveAllCategory = async (
  */
 
 const AddSubCategory = async (
-  req: Request<SubCategoryRequestParams, {}, CategoryRequestBody>,
+  req: Request<SubCategoryRequestParams, {}, SubCategoryRequestBody>,
   res: Response,
   next: NextFunction
 ) => {
@@ -137,7 +142,9 @@ const AddSubCategory = async (
     const { category_id } = req.params;
 
     // extracting category name from request body
-    const { category_name: sub_category_name } = req.body;
+    const { sub_category_name } = req.body;
+
+    console.log(req.body);
 
     if (!category_id) {
       throw new CustomError({
@@ -161,8 +168,8 @@ const AddSubCategory = async (
     const parent_category = await SelectCategoryByParentId({
       parent_category_id: category_id,
     });
-
-    if (!parent_category) {
+    console.log("parent", parent_category);
+    if (parent_category.length === 0) {
       throw new CustomError({
         errorCode: ErrorCode.NOT_FOUND,
         errorType: ErrorType.NOT_FOUND,
@@ -176,7 +183,7 @@ const AddSubCategory = async (
       category_name: sub_category_name,
     });
 
-    if (conflict) {
+    if (conflict.length !== 0) {
       throw new CustomError({
         errorCode: ErrorCode.CONFLICT,
         errorType: ErrorType.CONFLICT,
@@ -189,6 +196,7 @@ const AddSubCategory = async (
     const sub_category_slug =
       sub_category_name.replace(/\s+/g, "-").toLowerCase() + "-" + uuidv4();
 
+    console.log("ready to insert");
     const new_sub_category_insert_response = await InsertCategory({
       category_name: sub_category_name,
       category_slug: sub_category_slug,
@@ -204,6 +212,7 @@ const AddSubCategory = async (
           sub_category_name: new_sub_category.category_name,
           sub_category_slug: new_sub_category.category_slug,
           created_at: new_sub_category.created_at,
+          parent_category: new_sub_category.parent_category_id,
           // parent_category: new_sub_category.parent_cateogry?.category_name,
         },
       },
