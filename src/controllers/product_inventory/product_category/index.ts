@@ -74,7 +74,7 @@ const AddRootCategory = async (
     res.status(201).json({
       status: "success",
       data: {
-        new_root_category: {
+        category: {
           category_name: new_category.category_name,
           category_slug: new_category.category_slug,
           created_at: new_category.created_at,
@@ -162,7 +162,7 @@ const AddSubCategory = async (
       parent_category_id: category_id,
     });
 
-    if (parent_category === null) {
+    if (!parent_category) {
       throw new CustomError({
         errorCode: ErrorCode.NOT_FOUND,
         errorType: ErrorType.NOT_FOUND,
@@ -186,9 +186,8 @@ const AddSubCategory = async (
     }
 
     // creating sub-cateogry slug out fo subcategory name
-    const sub_category_slug = sub_category_name
-      .replace(/\s+/g, "-")
-      .toLowerCase();
+    const sub_category_slug =
+      sub_category_name.replace(/\s+/g, "-").toLowerCase() + "-" + uuidv4();
 
     const new_sub_category_insert_response = await InsertCategory({
       category_name: sub_category_name,
@@ -201,7 +200,7 @@ const AddSubCategory = async (
     res.status(201).json({
       status: "success",
       data: {
-        new_sub_category: {
+        sub_category: {
           sub_category_name: new_sub_category.category_name,
           sub_category_slug: new_sub_category.category_slug,
           created_at: new_sub_category.created_at,

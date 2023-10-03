@@ -34,7 +34,13 @@ const SelectCategoryByParentIdPreparedStatement = () => {
 const InsertCategory = async (
   category: InsertCategoryType
 ): Promise<Array<SelectCategoryType>> => {
-  return db.insert(Category).values(category).returning();
+  return db
+    .insert(Category)
+    .values({
+      category_name: category.category_name,
+      category_slug: category.category_slug,
+    })
+    .returning();
 };
 
 const SelectCategory = async (): Promise<Array<SelectCategoryType>> => {
@@ -48,6 +54,7 @@ const SelectCategoryByName = async ({
   category_name: string;
 }): Promise<Array<SelectCategoryType>> => {
   const prepared = SelectCategoryByNamePreparedStatement();
+
   return prepared.execute({ category_name });
 };
 
