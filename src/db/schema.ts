@@ -1,4 +1,4 @@
-import { One, relations, sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -51,7 +51,7 @@ export const Category = pgTable(
 );
 
 // application level relation
-export const CategoryRelations = relations(Category, ({ one, many }) => ({
+export const CategoryRelations = relations(Category, ({ many }) => ({
   products: many(JoinProductCategory),
   // subcategories: many(Category, { relationName: "sub_category" }),
   // parent_category: one(Category, {

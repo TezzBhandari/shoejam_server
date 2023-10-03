@@ -1,3 +1,8 @@
+
+-- manually added the line. It adds the extension for uuid functinalities
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
 CREATE TABLE IF NOT EXISTS "category" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 	"category_name" varchar(256) NOT NULL,
