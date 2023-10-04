@@ -23,10 +23,6 @@ const errorHandler = (
       .json({ status: "error", data: null, errors: error.serializeErrors() });
   }
 
-  // if ( error.message ) {
-
-  // }
-
   if (error.message.includes("invalid input syntax for type uuid:")) {
     return res.status(ErrorCode.BAD_REQUEST).json({
       status: "error",
@@ -34,6 +30,8 @@ const errorHandler = (
       errors: [{ message: ErrorMessage.NOT_FOUND, property: "id" }],
     });
   }
+
+  // debug console
   console.error(error);
   // Server unknown errors are handled here
   res.status(500).json({

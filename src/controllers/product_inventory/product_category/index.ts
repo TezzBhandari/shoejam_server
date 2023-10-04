@@ -8,6 +8,8 @@ import {
   SelectCategory,
   SelectCategoryByName,
   SelectCategoryByParentId,
+  SelectCategoryHierarchy,
+  SelectCategoryHierarchyById,
 } from "./db_utils";
 
 // Type Definition for request body of root category route
@@ -19,6 +21,9 @@ export interface CategoryRequestBody {
 export interface SubCategoryRequestParams {
   category_id: string;
 }
+
+export interface retrieveCategoryHierarchyByIdRequestParams
+  extends SubCategoryRequestParams {}
 
 // type definition for request body of subcateogory route
 export interface SubCategoryRequestBody {
@@ -89,38 +94,6 @@ const AddRootCategory = async (
     });
   } catch (error) {
     // SENDS ERROR TO  ERROR HANDLING MIDDLEWARE
-    next(error);
-  }
-};
-
-/**
- * handler: lists all categories
- */
-const RetrieveAllCategory = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const categories = await SelectCategory();
-
-    if (!categories) {
-      throw new CustomError({
-        errorCode: ErrorCode.NOT_FOUND,
-        errorType: ErrorType.NOT_FOUND,
-        message: "resource not found",
-        property: "",
-      });
-    }
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        categories,
-      },
-      errors: null,
-    });
-  } catch (error) {
     next(error);
   }
 };
@@ -224,4 +197,73 @@ const AddSubCategory = async (
   }
 };
 
-export { AddRootCategory, AddSubCategory, RetrieveAllCategory };
+/**
+ * handler: lists all categories
+ */
+const RetrieveCategoryHierarchy = async (
+  req: Request<{}, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const categories = await SelectCategoryHierarchy();
+
+    // if categories is empty, no item in the list
+
+    // if (!categories) {
+    //   throw new CustomError({
+    //     errorCode: ErrorCode.NOT_FOUND,
+    //     errorType: ErrorType.NOT_FOUND,
+    //     message: "resource not found",
+    //     property: "",
+    //   });
+    // }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        categories,
+      },
+      errors: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// retrives category heirarcy by id
+const RetrieveCategoryHierarchyById = async (
+  req: Request<retrieveCategoryHierarchyByIdRequestParams, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { category_id } = req.params;
+    if (!category_id) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message: "category_id params missing",
+        property: "category_id",
+      });
+    }
+
+    const categories = await SelectCategoryHierarchyById({ category_id });
+    res.status(200).json({
+      status: "success",
+      data: {
+        categories,
+      },
+      errors: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export {
+  AddRootCategory,
+  AddSubCategory,
+  RetrieveCategoryHierarchy,
+  RetrieveCategoryHierarchyById,
+};
