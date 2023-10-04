@@ -2,6 +2,27 @@
 -- manually added the line. It adds the extension for uuid functinalities
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- manual: create update_updated_at function
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+	NEW.updated_at = NOW();
+	RETURN NEW;
+END;
+$$ LANGUAGE	plpgsql;
+
+
+--manual- triggers: updates category's updated_at when any record of its corresponding row is updated
+CREATE TRIGGER category_updated_at_trigger
+BEFORE UPDATE ON category
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at()
+
+--manual- triggers: updates product's updated_at when any record of its corresponding row is updated
+CREATE TRIGGER product_updated_at_trigger
+BEFORE UPDATE ON product
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at()
 
 CREATE TABLE IF NOT EXISTS "category" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
