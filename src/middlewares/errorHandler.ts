@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { Prisma } from "@prisma/client";
 
 import GlobalCustomError from "../errors/GlobalCustomError";
+import { ErrorCode, ErrorMessage } from "../errors/types";
 
 /**
  * custom error handling middleware
@@ -23,23 +23,16 @@ const errorHandler = (
       .json({ status: "error", data: null, errors: error.serializeErrors() });
   }
 
-  // handle unique constraint error from prisma
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    // The .code property can be accessed in a type-safe manner
-    if (error.code === "P2002") {
-      console.error(
-        "There is a unique constraint violation, a new category cannot be created with this name"
-      );
-      res.status(400).json({
-        status: "error",
-        data: null,
-        errors: [
-          { message: "Database Constraint Violation Error", property: "" },
-        ],
-      });
-    }
+  if (error.message.includes("invalid input syntax for type uuid:")) {
+    return res.status(ErrorCode.BAD_REQUEST).json({
+      status: "error",
+      data: null,
+      errors: [{ message: ErrorMessage.NOT_FOUND, property: "id" }],
+    });
   }
 
+  // debug console
+  console.error(error);
   // Server unknown errors are handled here
   res.status(500).json({
     status: "error",

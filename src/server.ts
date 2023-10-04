@@ -6,6 +6,7 @@ import routes from "./routes";
 
 import { errorHandler } from "./middlewares/errorHandler";
 import db from "./db/client";
+import { Category } from "./db/schema";
 
 dotenv.config();
 
@@ -26,12 +27,12 @@ app.use("*", errorHandler);
 const start = async () => {
   try {
     // console.log("Server Initializing...");
+    console.log(await db.select().from(Category));
     console.log("Database Connection Established");
-    console.log(db.$with);
     app.listen(PORT, () => console.log(`Server Listening on Port ${PORT}...`));
   } catch (error: any) {
     console.error("Failed To Start The Server");
-    console.error(error);
+    console.error(error?.message);
     process.exit(1);
   }
 };
