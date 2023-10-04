@@ -5,6 +5,6 @@ import productCategoryRoutes from "./product_category";
 
 const router = Router();
 
-router.use("/product-category", productCategoryRoutes);
+router.use("/category", productCategoryRoutes);
 
 export default router;

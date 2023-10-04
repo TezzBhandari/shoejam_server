@@ -29,4 +29,5 @@ export enum ErrorMessage {
   MISSING_FIELD = "missing required field",
   NOT_FOUND = "not found",
   ALREADY_EXIST = "resource already exist",
+  DOESNOT_EXIST = "does not exist",
 }
