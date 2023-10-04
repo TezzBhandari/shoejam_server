@@ -16,6 +16,14 @@ const SelectCategoryByNamePreparedStatement = () => {
     .prepare("select_category_by_name");
 };
 
+const SelectCategoryByIdPreparedStatement = () => {
+  return db
+    .select()
+    .from(Category)
+    .where(eq(Category.id, sql.placeholder("category_id")))
+    .prepare("select_category_by_id");
+};
+
 const SelectCategoryPreparedStatement = () => {
   return db.select().from(Category).prepare("select_category");
 };
@@ -44,11 +52,13 @@ const InsertCategory = async (
     .returning();
 };
 
+// retuns the list of all category
 const SelectCategory = async (): Promise<Array<SelectCategoryType>> => {
   const prepared = SelectCategoryPreparedStatement();
   return prepared.execute();
 };
 
+// returns the category by its name
 const SelectCategoryByName = async ({
   category_name,
 }: {
@@ -59,6 +69,18 @@ const SelectCategoryByName = async ({
   return prepared.execute({ category_name });
 };
 
+// returns the category by its id
+const SelectCategoryById = async ({
+  category_id,
+}: {
+  category_id: string;
+}): Promise<Array<SelectCategoryType>> => {
+  const prepared = SelectCategoryByIdPreparedStatement();
+
+  return prepared.execute({ category_id });
+};
+
+// returns the category by its parent id
 const SelectCategoryByParentId = async ({
   parent_category_id,
 }: {
@@ -68,6 +90,7 @@ const SelectCategoryByParentId = async ({
   return prepared.execute({ parent_category_id });
 };
 
+// returns the hierarchy of category
 const SelectCategoryHierarchy = () => {
   return db.execute(sql<string>`
     WITH RECURSIVE CategoryHierarchy AS (
@@ -162,6 +185,42 @@ JOIN
   `);
 };
 
+// updates category
+
+// const UpdateCategoryName = ({
+//   category_id,
+//   category_name,
+// }: {
+//   category_id: string;
+//   category_name: string;
+// }) => {
+//   return db
+//     .update(Category)
+//     .set({ category_name })
+//     .where(eq(Category.id, category_id))
+//     .returning();
+// };
+
+//updates category and subcategory
+
+const UpdateCategory = ({
+  category_id,
+  category_name,
+  category_slug,
+  parent_category_id,
+}: {
+  category_id: string;
+  category_name: string;
+  category_slug: string;
+  parent_category_id: string | null;
+}) => {
+  return db
+    .update(Category)
+    .set({ category_name, category_slug, parent_category_id })
+    .where(eq(Category.id, category_id))
+    .returning();
+};
+
 export {
   InsertCategory,
   SelectCategory,
@@ -169,4 +228,6 @@ export {
   SelectCategoryByParentId,
   SelectCategoryHierarchy,
   SelectCategoryHierarchyById,
+  SelectCategoryById,
+  UpdateCategory,
 };

@@ -5,11 +5,12 @@ import CustomError from "../../../errors/CustomError";
 import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
 import {
   InsertCategory,
-  SelectCategory,
+  SelectCategoryById,
   SelectCategoryByName,
   SelectCategoryByParentId,
   SelectCategoryHierarchy,
   SelectCategoryHierarchyById,
+  UpdateCategory,
 } from "./db_utils";
 
 // Type Definition for request body of root category route
@@ -22,7 +23,12 @@ export interface SubCategoryRequestParams {
   category_id: string;
 }
 
-export interface retrieveCategoryHierarchyByIdRequestParams
+export interface UpdateCategoryRequestParams extends SubCategoryRequestParams {}
+export interface UpdateSubCategoryRequestParams {
+  sub_category_id: string;
+}
+
+export interface RetrieveCategoryHierarchyByIdRequestParams
   extends SubCategoryRequestParams {}
 
 // type definition for request body of subcateogory route
@@ -36,7 +42,7 @@ export interface SubCategoryRequestBody {
  * @param res express response object
  */
 
-const AddRootCategory = async (
+const CreateCategoryHandler = async (
   req: Request<{}, {}, CategoryRequestBody>,
   res: Response,
   next: NextFunction
@@ -105,7 +111,7 @@ const AddRootCategory = async (
  * @param next epxress next function
  */
 
-const AddSubCategory = async (
+const CreateSubCategoryHandler = async (
   req: Request<SubCategoryRequestParams, {}, SubCategoryRequestBody>,
   res: Response,
   next: NextFunction
@@ -141,7 +147,7 @@ const AddSubCategory = async (
     const parent_category = await SelectCategoryByParentId({
       parent_category_id: category_id,
     });
-    console.log("parent", parent_category);
+
     if (parent_category.length === 0) {
       throw new CustomError({
         errorCode: ErrorCode.NOT_FOUND,
@@ -200,7 +206,7 @@ const AddSubCategory = async (
 /**
  * handler: lists all categories
  */
-const RetrieveCategoryHierarchy = async (
+const RetrieveCategoryHierarchyHandler = async (
   req: Request<{}, {}, {}>,
   res: Response,
   next: NextFunction
@@ -232,8 +238,8 @@ const RetrieveCategoryHierarchy = async (
 };
 
 // retrives category heirarcy by id
-const RetrieveCategoryHierarchyById = async (
-  req: Request<retrieveCategoryHierarchyByIdRequestParams, {}, {}>,
+const RetrieveCategoryHierarchyByIdHandler = async (
+  req: Request<RetrieveCategoryHierarchyByIdRequestParams, {}, {}>,
   res: Response,
   next: NextFunction
 ) => {
@@ -261,9 +267,140 @@ const RetrieveCategoryHierarchyById = async (
   }
 };
 
+const UpdateCategoryHandler = async (
+  req: Request<UpdateCategoryRequestParams, {}, CategoryRequestBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { category_id } = req.params;
+    const { category_name } = req.body;
+    console.log(req.params, req.body);
+
+    if (!category_id) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message: "category_id params missing",
+        property: "category_id",
+      });
+    }
+
+    if (!category_name) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.VALIDATION_ERROR,
+        message: ErrorMessage.MISSING_FIELD,
+        property: "category name",
+      });
+    }
+
+    const category_exist = await SelectCategoryById({ category_id });
+
+    if (category_exist.length === 0) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message: ErrorMessage.DOESNOT_EXIST,
+        property: "category id",
+      });
+    }
+
+    console.log("exists", category_exist);
+
+    // create new slug for each update category or subcategory name
+    const category_slug =
+      category_name.replace(/\s+/g, "-").toLowerCase() + "-" + uuidv4();
+
+    // update category
+    const updated_category = await UpdateCategory({
+      category_id,
+      category_name,
+      category_slug,
+      parent_category_id: null,
+    });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        updated_category,
+      },
+      errors: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// const UpdateSubCategoryHandler = async (
+//   req: Request<UpdateSubCategoryRequestParams, {}, SubCategoryRequestBody>,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const { sub_category_id } = req.params;
+//     const { sub_category_name } = req.body;
+
+//     if (!sub_category_id) {
+//       throw new CustomError({
+//         errorCode: ErrorCode.BAD_REQUEST,
+//         errorType: ErrorType.BAD_REQUEST,
+//         message: "sub_category_id params missing",
+//         property: "sub_category_id",
+//       });
+//     }
+
+//     if (!sub_category_name) {
+//       throw new CustomError({
+//         errorCode: ErrorCode.BAD_REQUEST,
+//         errorType: ErrorType.VALIDATION_ERROR,
+//         message: ErrorMessage.MISSING_FIELD,
+//         property: "subcategory name",
+//       });
+//     }
+
+//     const category_exist = await SelectCategoryById({
+//       category_id: sub_category_id,
+//     });
+
+//     if (category_exist.length === 0) {
+//       throw new CustomError({
+//         errorCode: ErrorCode.BAD_REQUEST,
+//         errorType: ErrorType.BAD_REQUEST,
+//         message: ErrorMessage.DOESNOT_EXIST,
+//         property: "sub category id",
+//       });
+//     }
+
+//     // create new slug for each update category or subcategory name
+//     const sub_category_slug =
+//       sub_category_name.replace(/\s+/g, "-").toLowerCase() + "-" + uuidv4();
+
+//     // update category
+//     const updated_sub_category = await UpdateCategory({
+//       category_id: sub_category_id,
+//       category_name: sub_category_name,
+//       category_slug: sub_category_slug,
+//       parent_category_id: null,
+//     });
+
+//     res.status(200).json({
+//       status: "success",
+//       data: {
+//         updated_sub_category,
+//       },
+//       errors: null,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 export {
-  AddRootCategory,
-  AddSubCategory,
-  RetrieveCategoryHierarchy,
-  RetrieveCategoryHierarchyById,
+  CreateCategoryHandler,
+  CreateSubCategoryHandler,
+  RetrieveCategoryHierarchyHandler,
+  RetrieveCategoryHierarchyByIdHandler,
+  UpdateCategoryHandler,
+  // UpdateSubCategoryHandler,
 };
