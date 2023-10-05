@@ -110,7 +110,8 @@ const SelectCategoryHierarchy = () => {
         category_slug,
         parent_category_id,
         NULL::VARCHAR AS parent_category_name,
-        1 as level
+        1 as level,
+        category_name::text as path
     FROM
         category
     WHERE
@@ -124,7 +125,9 @@ const SelectCategoryHierarchy = () => {
         C.category_slug,
         C.parent_category_id,
         CH.category_name AS parent_category_name,
-        level + 1 AS level
+        level + 1 AS level,
+        CONCAT(CH.path, ' -> ', C.category_name)::text as path
+
 
     FROM
         category C
@@ -138,7 +141,8 @@ SELECT
     category_slug,
     parent_category_id,
     parent_category_name,
-    level as category_level
+    level as category_level,
+    path as category_path
 FROM
     CategoryHierarchy
     ;
@@ -159,7 +163,9 @@ const SelectCategoryHierarchyById = ({
         category_name,
         category_slug,
         parent_category_id,
-        1 as level
+        1 as level,
+        category_name::text as path
+
     FROM
         category
     WHERE
@@ -172,7 +178,9 @@ const SelectCategoryHierarchyById = ({
         C.category_name,
         C.category_slug,
         C.parent_category_id,
-        level + 1 AS level
+        level + 1 AS level,
+        CONCAT(CH.path, ' -> ', C.category_name)::text as path
+
 
     FROM
         category C
@@ -186,7 +194,8 @@ SELECT
     CH.category_slug,
     CH.parent_category_id,
     C.category_name as parent_category_name,
-    CH.level as category_level
+    CH.level as category_level,
+    CH.path as category_path
 FROM
     CategoryHierarchy CH
 JOIN
