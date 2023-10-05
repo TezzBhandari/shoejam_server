@@ -308,6 +308,8 @@ const UpdateCategoryHandler = async (
 
     console.log("exists", category_exist);
 
+    const parent_category_id = category_exist[0].parent_category_id;
+
     // create new slug for each update category or subcategory name
     const category_slug =
       category_name.replace(/\s+/g, "-").toLowerCase() + "-" + uuidv4();
@@ -317,7 +319,7 @@ const UpdateCategoryHandler = async (
       category_id,
       category_name,
       category_slug,
-      parent_category_id: null,
+      parent_category_id,
     });
 
     res.status(200).json({
