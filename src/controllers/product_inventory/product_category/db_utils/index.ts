@@ -1,9 +1,11 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, noopDecoder, sql } from "drizzle-orm";
 
 import db from "../../../../db/client";
 import {
   Category,
   InsertCategoryType,
+  JoinProductCategory,
+  Product,
   SelectCategoryType,
 } from "../../../../db/schema";
 
@@ -36,6 +38,14 @@ const SelectCategoryByParentIdPreparedStatement = () => {
       eq(Category.parent_category_id, sql.placeholder("parent_category_id"))
     )
     .prepare("select_category_by_parent_id");
+};
+
+const DeleteCategoryByIdPreparedStatement = () => {
+  return db
+    .delete(Category)
+    .where(eq(Category.id, sql.placeholder("category_id")))
+    .returning()
+    .prepare("delete_category_by_id");
 };
 
 // db queries
@@ -221,6 +231,28 @@ const UpdateCategory = ({
     .returning();
 };
 
+const DeleteCategoryById = ({
+  category_id,
+}: {
+  category_id: string;
+}): Promise<Array<SelectCategoryType>> => {
+  return DeleteCategoryByIdPreparedStatement().execute({ category_id });
+};
+
+const SelectProductOfACategory = ({ category_id }: { category_id: string }) => {
+  const prepared = db
+    .select()
+    .from(Category)
+    .innerJoin(
+      JoinProductCategory,
+      eq(Category.id, JoinProductCategory.category_id)
+    )
+    .innerJoin(Product, eq(Product.id, JoinProductCategory.product_id))
+    .where(eq(Category.id, sql.placeholder("category_id")))
+    .prepare("select_product_of_a_category");
+  return prepared.execute({ category_id });
+};
+
 export {
   InsertCategory,
   SelectCategory,
@@ -230,4 +262,6 @@ export {
   SelectCategoryHierarchyById,
   SelectCategoryById,
   UpdateCategory,
+  DeleteCategoryById,
+  SelectProductOfACategory,
 };
