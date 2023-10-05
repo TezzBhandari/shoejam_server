@@ -4,12 +4,14 @@ import { v4 as uuidv4 } from "uuid";
 import CustomError from "../../../errors/CustomError";
 import { ErrorCode, ErrorMessage, ErrorType } from "../../../errors/types";
 import {
+  DeleteCategoryById,
   InsertCategory,
   SelectCategoryById,
   SelectCategoryByName,
   SelectCategoryByParentId,
   SelectCategoryHierarchy,
   SelectCategoryHierarchyById,
+  SelectProductOfACategory,
   UpdateCategory,
 } from "./db_utils";
 
@@ -22,6 +24,8 @@ export interface CategoryRequestBody {
 export interface SubCategoryRequestParams {
   category_id: string;
 }
+
+export interface DeleteCategoryParmas extends SubCategoryRequestParams {}
 
 export interface UpdateCategoryRequestParams extends SubCategoryRequestParams {}
 export interface UpdateSubCategoryRequestParams {
@@ -398,6 +402,77 @@ const UpdateCategoryHandler = async (
 //   }
 // };
 
+const DeleteCategoryHandler = async (
+  req: Request<DeleteCategoryParmas, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { category_id } = req.params;
+
+    if (!category_id) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message: "category_id params missing",
+        property: "category_id",
+      });
+    }
+
+    const category_exist = await SelectCategoryById({ category_id });
+
+    if (category_exist.length === 0) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message: ErrorMessage.DOESNOT_EXIST,
+        property: "category id",
+      });
+    }
+
+    // check if it has subcategory
+    const sub_category_exist = await SelectCategoryByParentId({
+      parent_category_id: category_id,
+    });
+
+    if (sub_category_exist.length !== 0) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message:
+          "cannot delete category with subcategories. Remove subcategories first.",
+        property: "",
+      });
+    }
+
+    // check if it has any product
+
+    const category_has_product = await SelectProductOfACategory({
+      category_id,
+    });
+
+    if (category_has_product.length !== 0) {
+      throw new CustomError({
+        errorCode: ErrorCode.BAD_REQUEST,
+        errorType: ErrorType.BAD_REQUEST,
+        message: "cannot delete category with products. Remove product first.",
+        property: "",
+      });
+    }
+
+    const deleted_category = await DeleteCategoryById({ category_id });
+    res.status(200).json({
+      status: "success",
+      data: {
+        deleted_category,
+      },
+      errors: null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export {
   CreateCategoryHandler,
   CreateSubCategoryHandler,
@@ -405,4 +480,5 @@ export {
   RetrieveCategoryHierarchyByIdHandler,
   UpdateCategoryHandler,
   // UpdateSubCategoryHandler,
+  DeleteCategoryHandler,
 };
