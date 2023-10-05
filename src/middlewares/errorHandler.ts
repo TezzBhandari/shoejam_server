@@ -31,6 +31,14 @@ const errorHandler = (
     });
   }
 
+  if (error.message.includes("request size did not match content length")) {
+    return res.status(ErrorCode.BAD_REQUEST).json({
+      status: "error",
+      data: null,
+      errors: [{ message: error.message, property: "" }],
+    });
+  }
+
   // debug console
   console.error(error);
   // Server unknown errors are handled here
