@@ -1,7 +1,7 @@
 import express, { Application } from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-// import cors from "cors";
+import cors from "cors";
 
 import routes from "./routes";
 
@@ -15,8 +15,13 @@ const PORT = process.env.PORT || 3001;
 
 const app: Application = express();
 
+const corsOptions = {
+  origin: "http://localhost:3000",
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
 // setting up all the middleware
-// app.use(cors());
+app.use(cors(corsOptions));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
