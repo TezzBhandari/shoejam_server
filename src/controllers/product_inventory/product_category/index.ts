@@ -95,8 +95,11 @@ const CreateCategoryHandler = async (
       status: "success",
       data: {
         category: {
+          id: new_category.id,
           category_name: new_category.category_name,
           category_slug: new_category.category_slug,
+          updated_at: new_category.updated_at,
+          parent_category: new_category.parent_category_id,
           created_at: new_category.created_at,
         },
       },
