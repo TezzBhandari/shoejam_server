@@ -195,10 +195,12 @@ const CreateSubCategoryHandler = async (
       status: "success",
       data: {
         sub_category: {
+          id: new_sub_category.id,
           sub_category_name: new_sub_category.category_name,
           sub_category_slug: new_sub_category.category_slug,
-          created_at: new_sub_category.created_at,
+          updated_at: new_sub_category.updated_at,
           parent_category: new_sub_category.parent_category_id,
+          created_at: new_sub_category.created_at,
           // parent_category: new_sub_category.parent_cateogry?.category_name,
         },
       },
