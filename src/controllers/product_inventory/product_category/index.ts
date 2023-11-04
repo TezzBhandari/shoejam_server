@@ -151,8 +151,8 @@ const CreateSubCategoryHandler = async (
     }
 
     // check of parent category exists
-    const parent_category = await SelectCategoryByParentId({
-      parent_category_id: category_id,
+    const parent_category = await SelectCategoryById({
+      category_id,
     });
 
     if (parent_category.length === 0) {
