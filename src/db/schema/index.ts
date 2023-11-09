@@ -65,6 +65,43 @@ export const CategoryRelations = relations(Category, ({ many }) => ({
 export type InsertCategoryType = typeof Category.$inferInsert;
 export type SelectCategoryType = typeof Category.$inferSelect;
 
+// BRAND TABLE
+export const Brand = pgTable("brand", {
+  id: uuid("id")
+    .notNull()
+    .default(sql`uuid_generate_v4()`)
+    .primaryKey(),
+  brandName: varchar("brand_name", { length: 50 }),
+  brandSlug: varchar("brand_slug", { length: 100 }),
+});
+
+// PRODUCT VARIATION
+export const ProductVariation = pgTable("product_variation", {
+  id: uuid("id")
+    .notNull()
+    .default(sql`uuid_generate_v4()`),
+  variationName: varchar("variation_name").notNull().unique(),
+  variationSlug: varchar("variation_slug").notNull().unique(),
+});
+
+// PRODUCT VARIATION VALUE
+export const ProductVariationValue = pgTable("product_variation_value", {
+  id: uuid("id")
+    .notNull()
+    .default(sql`uuid_generate_v4()`)
+    .primaryKey(),
+  variationValueName: varchar("variation_value_name").notNull().unique(),
+});
+
+// PRODUCT IMAGES
+export const ProductImage = pgTable("product_image", {
+  id: uuid("id")
+    .notNull()
+    .default(sql`uuid_generate_v4()`)
+    .primaryKey(),
+  imageUrl: text("image_url").notNull().unique(),
+});
+
 // Product Table: stores the product detail like product_name, product_description, etc
 export const Product = pgTable(
   "product",
