@@ -13,7 +13,7 @@ import {
   integer,
 } from "drizzle-orm/pg-core";
 
-// Category Table: stores the category of products
+// CATEGORY TABLE: stores the category of products
 export const Category = pgTable(
   "category",
   {
@@ -29,7 +29,7 @@ export const Category = pgTable(
     updated_at: timestamp("updated_at").notNull().defaultNow(),
   },
 
-  // one to many realtion: category hierarchy tree
+  // ONE TO MANY RELATION: category hierarchy tree
   (category_table) => {
     return {
       category_parent_category_id_fkey: foreignKey({
@@ -51,7 +51,7 @@ export const Category = pgTable(
   }
 );
 
-// application level relation
+// APPLICATION LEVEL RELATION
 export const CategoryRelations = relations(Category, ({ many }) => ({
   products: many(JoinProductCategory),
   // subcategories: many(Category, { relationName: "sub_category" }),
@@ -62,7 +62,7 @@ export const CategoryRelations = relations(Category, ({ many }) => ({
   // }),
 }));
 
-// types of insert and slect category
+// TYPES OF INSERT AND SELECT CATEGORY
 export type InsertCategoryType = typeof Category.$inferInsert;
 export type SelectCategoryType = typeof Category.$inferSelect;
 
@@ -122,7 +122,7 @@ export const ProductImage = pgTable(
   // }
 );
 
-// Product Table: stores the product detail like product_name, product_description, etc
+// PRODUCT TABLE: stores the product detail like product_name, product_description, etc
 export const Product = pgTable(
   "product",
   {
@@ -152,12 +152,12 @@ export const Product = pgTable(
   }
 );
 
-// application level product realtion
+// APPLICATION LEVEL PRODUCT RELATION
 export const ProductRelations = relations(Product, ({ many }) => ({
   categories: many(JoinProductCategory),
 }));
 
-// Join Table: product and category
+// JOIN TABLE: PRODUCT AND CATEGORY
 export const JoinProductCategory = pgTable(
   "product_category",
   {
@@ -169,13 +169,13 @@ export const JoinProductCategory = pgTable(
       .references(() => Category.id),
   },
 
-  // composite primary key: product_id + category_id
+  // COMPOSITE PRIMARY KEY: product_id + category_id
   (productCategory) => ({
     pk: primaryKey(productCategory.product_id, productCategory.category_id),
   })
 );
 
-// application level relationship of product and category
+// APPLICATION LEVEL RELATION OF PRODUCT AND CATEGORY
 export const JoinProductCategoryRelations = relations(
   JoinProductCategory,
   ({ one }) => ({
