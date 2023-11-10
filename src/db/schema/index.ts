@@ -10,6 +10,7 @@ import {
   index,
   doublePrecision,
   boolean,
+  integer,
 } from "drizzle-orm/pg-core";
 
 // Category Table: stores the category of products
@@ -91,16 +92,35 @@ export const ProductVariationValue = pgTable("product_variation_value", {
     .default(sql`uuid_generate_v4()`)
     .primaryKey(),
   variationValueName: varchar("variation_value_name").notNull().unique(),
+  ProductVariationId: uuid("product_variation_id").references(
+    () => ProductVariation.id
+  ),
 });
 
 // PRODUCT IMAGES
-export const ProductImage = pgTable("product_image", {
-  id: uuid("id")
-    .notNull()
-    .default(sql`uuid_generate_v4()`)
-    .primaryKey(),
-  imageUrl: text("image_url").notNull().unique(),
-});
+export const ProductImage = pgTable(
+  "product_image",
+  {
+    id: uuid("id")
+      .notNull()
+      .default(sql`uuid_generate_v4()`)
+      .primaryKey(),
+    imageUrl: text("image_url").notNull().unique(),
+    subProductId: uuid("sub_product_id")
+      .notNull()
+      .references(() => SubProduct.id),
+    productId: uuid("product_id")
+      .notNull()
+      .references(() => Product.id),
+  }
+  //(productImageTable) => {
+  //   return {
+  //     subProduct_ProductImage_fk: {
+  //       columns: []
+  //     }
+  //   }
+  // }
+);
 
 // Product Table: stores the product detail like product_name, product_description, etc
 export const Product = pgTable(
@@ -110,25 +130,23 @@ export const Product = pgTable(
       .notNull()
       .default(sql`uuid_generate_v4()`)
       .primaryKey(),
-    product_name: varchar("product_name", { length: 256 }).notNull(),
-    product_description: text("product_description").notNull(),
-    product_slug: varchar("product_slug").notNull(),
+    productName: varchar("product_name", { length: 256 }).notNull(),
+    productDescription: text("product_description").notNull(),
+    productSlug: varchar("product_slug").notNull(),
     price: doublePrecision("price").notNull(),
     compare_at_price: doublePrecision("compare_at_price"),
-    is_trending: boolean("is_trending").default(false).notNull(),
-    is_published: boolean("is_published").default(false).notNull(),
-    is_featured: boolean("is_featured").default(false).notNull(),
-    created_at: timestamp("created_at").defaultNow().notNull(),
-    updated_at: timestamp("updated_at").defaultNow().notNull(),
+    isTrending: boolean("is_trending").default(false).notNull(),
+    isPublished: boolean("is_published").default(false).notNull(),
+    isFeatured: boolean("is_featured").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    // PRODUCT AND BRAND RELATIONSHIP
+    brandId: uuid("brand_id").references(() => Brand.id),
   },
   (product_table) => {
     return {
-      product_name_idx: index("product_name_idx").on(
-        product_table.product_name
-      ),
-      product_slug_idx: index("product_slug_idx").on(
-        product_table.product_slug
-      ),
+      product_name_idx: index("product_name_idx").on(product_table.productName),
+      product_slug_idx: index("product_slug_idx").on(product_table.productSlug),
       price_idx: index("price_idx").on(product_table.price),
     };
   }
@@ -170,4 +188,36 @@ export const JoinProductCategoryRelations = relations(
       references: [Category.id],
     }),
   })
+);
+
+// SUB PRODUCT
+export const SubProduct = pgTable("sub_product", {
+  id: uuid("id")
+    .notNull()
+    .default(sql`uuid_generate_v4()`)
+    .primaryKey(),
+  sku: varchar("sku").notNull().unique(),
+  price: doublePrecision("price"),
+  quantity: integer("quantity").default(0),
+  itemSold: integer("item_sold").default(0),
+  productId: uuid("product_id").references(() => Product.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// JOIN TABLE: SUB PRODUCT AND VARIATION VALUES
+export const JoinSubProductVariationValue = pgTable(
+  "subProduct_varitionValue",
+  {
+    subProductId: uuid("sub_product_id"),
+    variationValueId: uuid("variation_value_id"),
+  },
+  (subProductVariationValue) => {
+    return {
+      SubProductVariationValuePk: primaryKey(
+        subProductVariationValue.subProductId,
+        subProductVariationValue.variationValueId
+      ),
+    };
+  }
 );
