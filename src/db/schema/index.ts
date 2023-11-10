@@ -209,14 +209,35 @@ export const SubProduct = pgTable("sub_product", {
 export const JoinSubProductVariationValue = pgTable(
   "subProduct_varitionValue",
   {
-    subProductId: uuid("sub_product_id"),
-    variationValueId: uuid("variation_value_id"),
+    subProductId: uuid("sub_product_id").references(() => SubProduct.id),
+    productVariationValueId: uuid("variation_value_id").references(
+      () => ProductVariation.id
+    ),
   },
   (subProductVariationValue) => {
     return {
       SubProductVariationValuePk: primaryKey(
         subProductVariationValue.subProductId,
-        subProductVariationValue.variationValueId
+        subProductVariationValue.productVariationValueId
+      ),
+    };
+  }
+);
+
+// JOIN TABLE: PRODUCT Variation VALUES AND CATEGORY
+export const JoinCategoryProductVariation = pgTable(
+  "category_product_Variation",
+  {
+    categoryId: uuid("category_id").references(() => Category.id),
+    productVariationId: uuid("product_variation_id").references(
+      () => ProductVariation.id
+    ),
+  },
+  (categoryProductVariation) => {
+    return {
+      categoryProductVariationPk: primaryKey(
+        categoryProductVariation.categoryId,
+        categoryProductVariation.productVariationId
       ),
     };
   }
