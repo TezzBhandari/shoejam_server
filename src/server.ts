@@ -34,7 +34,7 @@ app.use("*", errorHandler);
 const start = async () => {
   try {
     // console.log("Server Initializing...");
-    console.log(await db.select().from(Category));
+    // console.log(await db.select().from(Category));
     console.log("Database Connection Established");
     app.listen(PORT, () => console.log(`Server Listening on Port ${PORT}...`));
   } catch (error: any) {
