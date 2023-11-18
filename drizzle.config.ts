@@ -5,6 +5,6 @@ export default {
   out: "./src/db/drizzle/migrations",
   driver: "pg",
   dbCredentials: {
-    connectionString: process.env.DATABASE_URL as string,
+    connectionString: process.env.NEON_DATABASE_URL as string,
   },
 } satisfies Config;

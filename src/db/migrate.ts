@@ -6,14 +6,16 @@ import postgres from "postgres";
 // const db: PostgresJsDatabase = drizzle(queryClient);
 
 // for migrations
-const migrationClient = postgres(process.env.DATABASE_URL as string, {
+const migrationClient = postgres(process.env.NEON_DATABASE_URL as string, {
   max: 1,
 });
 
 const start = async () => {
   try {
     console.debug("migration started");
-    await migrate(drizzle(migrationClient), { migrationsFolder: "src/db" });
+    await migrate(drizzle(migrationClient), {
+      migrationsFolder: "src/db/drizzle/migrations",
+    });
     console.debug("migration complete");
     process.exit(0);
   } catch (error) {

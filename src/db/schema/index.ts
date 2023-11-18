@@ -80,6 +80,7 @@ export const Brand = pgTable("brand", {
 export const ProductVariation = pgTable("product_variation", {
   id: uuid("id")
     .notNull()
+    .primaryKey()
     .default(sql`uuid_generate_v4()`),
   variationName: varchar("variation_name").notNull().unique(),
   variationSlug: varchar("variation_slug").notNull().unique(),
@@ -172,6 +173,9 @@ export const JoinProductCategory = pgTable(
   // COMPOSITE PRIMARY KEY: product_id + category_id
   (productCategory) => ({
     pk: primaryKey(productCategory.product_id, productCategory.category_id),
+    // pk: primaryKey({
+    //   columns: [productCategory.category_id, productCategory.product_id],
+    // }),
   })
 );
 
@@ -207,26 +211,32 @@ export const SubProduct = pgTable("sub_product", {
 
 // JOIN TABLE: SUB PRODUCT AND VARIATION VALUES
 export const JoinSubProductVariationValue = pgTable(
-  "subProduct_varitionValue",
+  "sub_product_variation_value",
   {
     subProductId: uuid("sub_product_id").references(() => SubProduct.id),
     productVariationValueId: uuid("variation_value_id").references(
-      () => ProductVariation.id
+      () => ProductVariationValue.id
     ),
   },
   (subProductVariationValue) => {
     return {
-      SubProductVariationValuePk: primaryKey(
+      pk: primaryKey(
         subProductVariationValue.subProductId,
         subProductVariationValue.productVariationValueId
       ),
+      // pk: primaryKey({
+      //   columns: [
+      //     subProductVariationValue.productVariationValueId,
+      //     subProductVariationValue.subProductId,
+      //   ],
+      // }),
     };
   }
 );
 
 // JOIN TABLE: PRODUCT Variation VALUES AND CATEGORY
 export const JoinCategoryProductVariation = pgTable(
-  "category_product_Variation",
+  "category_product_variation",
   {
     categoryId: uuid("category_id").references(() => Category.id),
     productVariationId: uuid("product_variation_id").references(
@@ -235,10 +245,16 @@ export const JoinCategoryProductVariation = pgTable(
   },
   (categoryProductVariation) => {
     return {
-      categoryProductVariationPk: primaryKey(
-        categoryProductVariation.categoryId,
-        categoryProductVariation.productVariationId
-      ),
+      // pk: primaryKey(
+      //   categoryProductVariation.categoryId,
+      //   categoryProductVariation.productVariationId
+      // ),
+      pk: primaryKey({
+        columns: [
+          categoryProductVariation.categoryId,
+          categoryProductVariation.productVariationId,
+        ],
+      }),
     };
   }
 );

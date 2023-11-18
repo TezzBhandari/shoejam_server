@@ -1,6 +1,6 @@
 {
-  "id": "2a205d0f-85b3-4acc-ae03-8fe6178a8782",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "dc05194d-87ab-4910-abf9-3669be178c26",
+  "prevId": "2a205d0f-85b3-4acc-ae03-8fe6178a8782",
   "version": "5",
   "dialect": "pg",
   "tables": {
@@ -240,8 +240,8 @@
       },
       "uniqueConstraints": {}
     },
-    "sub_product_varition_value": {
-      "name": "sub_product_varition_value",
+    "sub_product_variation_value": {
+      "name": "sub_product_variation_value",
       "schema": "",
       "columns": {
         "sub_product_id": {
@@ -259,9 +259,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "sub_product_varition_value_sub_product_id_sub_product_id_fk": {
-          "name": "sub_product_varition_value_sub_product_id_sub_product_id_fk",
-          "tableFrom": "sub_product_varition_value",
+        "sub_product_variation_value_sub_product_id_sub_product_id_fk": {
+          "name": "sub_product_variation_value_sub_product_id_sub_product_id_fk",
+          "tableFrom": "sub_product_variation_value",
           "tableTo": "sub_product",
           "columnsFrom": [
             "sub_product_id"
@@ -272,9 +272,9 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "sub_product_varition_value_variation_value_id_product_variation_value_id_fk": {
-          "name": "sub_product_varition_value_variation_value_id_product_variation_value_id_fk",
-          "tableFrom": "sub_product_varition_value",
+        "sub_product_variation_value_variation_value_id_product_variation_value_id_fk": {
+          "name": "sub_product_variation_value_variation_value_id_product_variation_value_id_fk",
+          "tableFrom": "sub_product_variation_value",
           "tableTo": "product_variation_value",
           "columnsFrom": [
             "variation_value_id"
@@ -287,8 +287,8 @@
         }
       },
       "compositePrimaryKeys": {
-        "sub_product_varition_value_sub_product_id_variation_value_id": {
-          "name": "sub_product_varition_value_sub_product_id_variation_value_id",
+        "sub_product_variation_value_sub_product_id_variation_value_id": {
+          "name": "sub_product_variation_value_sub_product_id_variation_value_id",
           "columns": [
             "sub_product_id",
             "variation_value_id"

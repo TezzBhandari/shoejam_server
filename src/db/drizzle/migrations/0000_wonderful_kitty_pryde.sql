@@ -1,3 +1,7 @@
+-- MANUAL CODE UUID EXTENSION
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+
 CREATE TABLE IF NOT EXISTS "brand" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 	"brand_name" varchar(50),
@@ -15,10 +19,10 @@ CREATE TABLE IF NOT EXISTS "category" (
 	CONSTRAINT "category_category_slug_unique" UNIQUE("category_slug")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "category_product_Variation" (
+CREATE TABLE IF NOT EXISTS "category_product_variation" (
 	"category_id" uuid,
 	"product_variation_id" uuid,
-	CONSTRAINT category_product_Variation_category_id_product_variation_id PRIMARY KEY("category_id","product_variation_id")
+	CONSTRAINT category_product_variation_category_id_product_variation_id PRIMARY KEY("category_id","product_variation_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "product_category" (
@@ -27,10 +31,10 @@ CREATE TABLE IF NOT EXISTS "product_category" (
 	CONSTRAINT product_category_product_id_category_id PRIMARY KEY("product_id","category_id")
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "subProduct_varitionValue" (
+CREATE TABLE IF NOT EXISTS "sub_product_varition_value" (
 	"sub_product_id" uuid,
 	"variation_value_id" uuid,
-	CONSTRAINT subProduct_varitionValue_sub_product_id_variation_value_id PRIMARY KEY("sub_product_id","variation_value_id")
+	CONSTRAINT sub_product_varition_value_sub_product_id_variation_value_id PRIMARY KEY("sub_product_id","variation_value_id")
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "product" (
@@ -57,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "product_image" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "product_variation" (
-	"id" uuid DEFAULT uuid_generate_v4() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
 	"variation_name" varchar NOT NULL,
 	"variation_slug" varchar NOT NULL,
 	CONSTRAINT "product_variation_variation_name_unique" UNIQUE("variation_name"),
@@ -95,13 +99,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "category_product_Variation" ADD CONSTRAINT "category_product_Variation_category_id_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "category_product_variation" ADD CONSTRAINT "category_product_variation_category_id_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "category"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "category_product_Variation" ADD CONSTRAINT "category_product_Variation_product_variation_id_product_variation_id_fk" FOREIGN KEY ("product_variation_id") REFERENCES "product_variation"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "category_product_variation" ADD CONSTRAINT "category_product_variation_product_variation_id_product_variation_id_fk" FOREIGN KEY ("product_variation_id") REFERENCES "product_variation"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
@@ -119,13 +123,13 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "subProduct_varitionValue" ADD CONSTRAINT "subProduct_varitionValue_sub_product_id_sub_product_id_fk" FOREIGN KEY ("sub_product_id") REFERENCES "sub_product"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "sub_product_varition_value" ADD CONSTRAINT "sub_product_varition_value_sub_product_id_sub_product_id_fk" FOREIGN KEY ("sub_product_id") REFERENCES "sub_product"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "subProduct_varitionValue" ADD CONSTRAINT "subProduct_varitionValue_variation_value_id_product_variation_id_fk" FOREIGN KEY ("variation_value_id") REFERENCES "product_variation"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "sub_product_varition_value" ADD CONSTRAINT "sub_product_varition_value_variation_value_id_product_variation_value_id_fk" FOREIGN KEY ("variation_value_id") REFERENCES "product_variation_value"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
