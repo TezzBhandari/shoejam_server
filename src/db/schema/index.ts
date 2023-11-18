@@ -60,6 +60,7 @@ export const CategoryRelations = relations(Category, ({ many }) => ({
   //   references: [Category.id],
   //   relationName: "parent_category",
   // }),
+  productVariations: many(JoinCategoryProductVariation),
 }));
 
 // TYPES OF INSERT AND SELECT CATEGORY
@@ -76,6 +77,11 @@ export const Brand = pgTable("brand", {
   brandSlug: varchar("brand_slug", { length: 100 }),
 });
 
+// APPLICATION LEVEL BRAND RELATIONS
+const BrandRelation = relations(Brand, ({ one, many }) => ({
+  products: many(Product),
+}));
+
 // PRODUCT VARIATION
 export const ProductVariation = pgTable("product_variation", {
   id: uuid("id")
@@ -85,6 +91,15 @@ export const ProductVariation = pgTable("product_variation", {
   variationName: varchar("variation_name").notNull().unique(),
   variationSlug: varchar("variation_slug").notNull().unique(),
 });
+
+// APPLICATION LEVEL RELATION: ONE TO MANY, TABLES: (PRODUCT VARIATION AND PRODUCT VARIATION VALUE)
+export const ProductVariationRelation = relations(
+  ProductVariation,
+  ({ many }) => ({
+    variationValues: many(ProductVariationValue),
+    categories: many(JoinCategoryProductVariation),
+  })
+);
 
 // PRODUCT VARIATION VALUE
 export const ProductVariationValue = pgTable("product_variation_value", {
@@ -97,6 +112,18 @@ export const ProductVariationValue = pgTable("product_variation_value", {
     () => ProductVariation.id
   ),
 });
+
+// APPLICATION LEVEL RELATION
+export const ProductVariationValueRelation = relations(
+  ProductVariationValue,
+  ({ one, many }) => ({
+    productVariation: one(ProductVariation, {
+      fields: [ProductVariationValue.ProductVariationId],
+      references: [ProductVariation.id],
+    }),
+    subProducts: many(JoinSubProductVariationValue),
+  })
+);
 
 // PRODUCT IMAGES
 export const ProductImage = pgTable(
@@ -122,6 +149,18 @@ export const ProductImage = pgTable(
   //   }
   // }
 );
+
+export const ProductImageRelation = relations(ProductImage, ({ one }) => ({
+  // product: one(Product, {
+  //   fields: [ProductImage.productId],
+  //   references: [Product.id],
+  // }),
+
+  subProduct: one(SubProduct, {
+    fields: [ProductImage.subProductId],
+    references: [SubProduct.id],
+  }),
+}));
 
 // PRODUCT TABLE: stores the product detail like product_name, product_description, etc
 export const Product = pgTable(
@@ -154,8 +193,17 @@ export const Product = pgTable(
 );
 
 // APPLICATION LEVEL PRODUCT RELATION
-export const ProductRelations = relations(Product, ({ many }) => ({
+export const ProductRelations = relations(Product, ({ many, one }) => ({
   categories: many(JoinProductCategory),
+  brand: one(Brand, {
+    fields: [Product.brandId],
+    references: [Brand.id],
+  }),
+  subProducts: many(SubProduct),
+  thumnail: one(ProductImage, {
+    fields: [Product.id],
+    references: [ProductImage.productId],
+  }),
 }));
 
 // JOIN TABLE: PRODUCT AND CATEGORY
@@ -209,6 +257,16 @@ export const SubProduct = pgTable("sub_product", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// APPLICATON LEVEL RELATION
+export const SubProductRelation = relations(SubProduct, ({ many, one }) => ({
+  productVariationValues: many(JoinSubProductVariationValue),
+  product: one(Product, {
+    fields: [SubProduct.productId],
+    references: [Product.id],
+  }),
+  productImages: many(ProductImage),
+}));
+
 // JOIN TABLE: SUB PRODUCT AND VARIATION VALUES
 export const JoinSubProductVariationValue = pgTable(
   "sub_product_variation_value",
@@ -234,6 +292,21 @@ export const JoinSubProductVariationValue = pgTable(
   }
 );
 
+// APPLICATION LEVEL RELATION
+const JoinSubProductVariationValueRelation = relations(
+  JoinSubProductVariationValue,
+  ({ one }) => ({
+    subProduct: one(SubProduct, {
+      fields: [JoinSubProductVariationValue.subProductId],
+      references: [SubProduct.id],
+    }),
+    productVariationValue: one(ProductVariationValue, {
+      fields: [JoinSubProductVariationValue.productVariationValueId],
+      references: [ProductVariationValue.id],
+    }),
+  })
+);
+
 // JOIN TABLE: PRODUCT Variation VALUES AND CATEGORY
 export const JoinCategoryProductVariation = pgTable(
   "category_product_variation",
@@ -257,4 +330,19 @@ export const JoinCategoryProductVariation = pgTable(
       }),
     };
   }
+);
+
+// APPLICATION LEVEL RELATION
+export const JoinCategoryProductVariationRelation = relations(
+  JoinCategoryProductVariation,
+  ({ one }) => ({
+    category: one(Category, {
+      fields: [JoinCategoryProductVariation.categoryId],
+      references: [Category.id],
+    }),
+    productVariation: one(ProductVariation, {
+      fields: [JoinCategoryProductVariation.productVariationId],
+      references: [ProductVariation.id],
+    }),
+  })
 );
