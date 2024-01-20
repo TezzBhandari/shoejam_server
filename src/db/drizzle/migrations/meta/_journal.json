@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1700140324528,
+      "tag": "0000_wonderful_kitty_pryde",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1700140751924,
+      "tag": "0001_broken_lilith",
+      "breakpoints": true
+    }
+  ]
+}

@@ -13,7 +13,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 
-const app: Application = express();
+const app: Application = express().disable("x-powered-by");
 
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -34,7 +34,7 @@ app.use("*", errorHandler);
 const start = async () => {
   try {
     // console.log("Server Initializing...");
-    console.log(await db.select().from(Category));
+    // console.log(await db.select().from(Category));
     console.log("Database Connection Established");
     app.listen(PORT, () => console.log(`Server Listening on Port ${PORT}...`));
   } catch (error: any) {
