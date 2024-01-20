@@ -13,7 +13,7 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3001;
 
-const app: Application = express();
+const app: Application = express().disable("x-powered-by");
 
 const corsOptions = {
   origin: "http://localhost:3000",

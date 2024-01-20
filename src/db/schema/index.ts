@@ -151,11 +151,6 @@ export const ProductImage = pgTable(
 );
 
 export const ProductImageRelation = relations(ProductImage, ({ one }) => ({
-  // product: one(Product, {
-  //   fields: [ProductImage.productId],
-  //   references: [Product.id],
-  // }),
-
   subProduct: one(SubProduct, {
     fields: [ProductImage.subProductId],
     references: [SubProduct.id],
@@ -173,8 +168,8 @@ export const Product = pgTable(
     productName: varchar("product_name", { length: 256 }).notNull(),
     productDescription: text("product_description").notNull(),
     productSlug: varchar("product_slug").notNull(),
-    price: doublePrecision("price").notNull(),
-    compare_at_price: doublePrecision("compare_at_price"),
+    productPrice: doublePrecision("price").notNull(),
+    compareAtPrice: doublePrecision("compare_at_price"),
     isTrending: boolean("is_trending").default(false).notNull(),
     isPublished: boolean("is_published").default(false).notNull(),
     isFeatured: boolean("is_featured").default(false).notNull(),
@@ -187,7 +182,7 @@ export const Product = pgTable(
     return {
       product_name_idx: index("product_name_idx").on(product_table.productName),
       product_slug_idx: index("product_slug_idx").on(product_table.productSlug),
-      price_idx: index("price_idx").on(product_table.price),
+      price_idx: index("price_idx").on(product_table.productPrice),
     };
   }
 );
@@ -249,7 +244,7 @@ export const SubProduct = pgTable("sub_product", {
     .default(sql`uuid_generate_v4()`)
     .primaryKey(),
   sku: varchar("sku").notNull().unique(),
-  price: doublePrecision("price"),
+  itemPrice: doublePrecision("price"),
   quantity: integer("quantity").default(0),
   itemSold: integer("item_sold").default(0),
   productId: uuid("product_id").references(() => Product.id),
